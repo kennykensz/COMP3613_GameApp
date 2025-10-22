@@ -29,15 +29,22 @@ def init():
     # Create sample games
     chess = Game(title="Chess")
     monopoly = Game(title="Monopoly")
+    fc26 = Game(title = "FC 26 Standard Edition")
+    bf6 = Game (title = "Battlfied 6 Standard Edition")
     db.session.add(chess)
     db.session.add(monopoly)
+    db.session.add(fc26)
+    db.session.add(bf6)
     db.session.commit()
 
     # Create sample listings
     listing1 = Listing(game_id=chess.id, owner_id=kristian.id, condition="New", price=25.0)
     listing2 = Listing(game_id=monopoly.id, owner_id=kendell.id, condition="Used", price=15.0)
+    listing3 = Listing(game_id=fc26.id, owner_id = kendell.id, condition="Used", price =89.00)
+    listing4 = Listing(game_id=bf6.id, owner_id= kendell.id, condition = "Used", price = 69.99)
     db.session.add(listing1)
     db.session.add(listing2)
+    db.session.add(listing3)
     db.session.commit()
     print('database initialized and seeded with sample data')
 
@@ -64,48 +71,48 @@ def listGame():
     db.session.commit()
     print(f'Game "{game}" listed successfully with ID {newGame.id} by user "{username}".')
 
-# @app.cli.command("returnGame", help="Returns a rented game")
-# def returnGame():
-#     username = input("Enter your username: ")
-#     user = User.query.filter_by(username=username).first()
-#     try:
-#         if not user:
-#             raise Exception("User does not exist.")
-#         if not isinstance(user, Customer):
-#             raise Exception("Only customers can return games.")
-#     except Exception as e:
-#         print(f"Error: {e}")
-#         return
+@app.cli.command("returnGame", help="Returns a rented game")
+def returnGame():
+    username = input("Enter your username: ")
+    user = User.query.filter_by(username=username).first()
+    try:
+        if not user:
+            raise Exception("User does not exist.")
+        if not isinstance(user, Customer):
+            raise Exception("Only customers can return games.")
+    except Exception as e:
+        print(f"Error: {e}")
+        return
 
-#     rentals = user.rentals
-#     if not rentals:
-#         print("You have no rentals.")
-#         return
+    rentals = user.rentals
+    if not rentals:
+        print("You have no rentals.")
+        return
 
-#     print("Your Rentals:")
-#     for rental in rentals:
-#         listing = Listing.query.get(rental.listingID)
-#         game = Game.query.get(listing.game_id) if listing else None
-#         status = "Returned" if rental.returnDate else "Not Returned"
-#         print(f'Rental ID: {rental.id}, Game: {game.title if game else "Unknown"}, Status: {status}')
+    print("Your Rentals:")
+    for rental in rentals:
+        listing = Listing.query.get(rental.listingID)
+        game = Game.query.get(listing.game_id) if listing else None
+        status = "Returned" if rental.returnDate else "Not Returned"
+        print(f'Rental ID: {rental.id}, Game: {game.title if game else "Unknown"}, Status: {status}')
 
-#     rental_id = int(input("Enter the Rental ID of the game you want to return: "))
-#     rental_to_return = next((r for r in rentals if r.id == rental_id), None)
-#     try:
-#         if not rental_to_return:
-#             raise Exception("Rental does not exist.")
-#         if rental_to_return.returnDate is not None:
-#             raise Exception("Game has already been returned.")
+    rental_id = int(input("Enter the Rental ID of the game you want to return: "))
+    rental_to_return = next((r for r in rentals if r.id == rental_id), None)
+    try:
+        if not rental_to_return:
+            raise Exception("Rental does not exist.")
+        if rental_to_return.returnDate is not None:
+            raise Exception("Game has already been returned.")
         
-#         rental_to_return.returnDate = datetime.utcnow()
-#         listing = Listing.query.get(rental_to_return.listingID)
-#         if listing:
-#             listing.set_Availability(True)  # Mark the listing as available again
-#         db.session.commit()
-#         print(f'Game with Rental ID {rental_id} returned successfully.')
-#     except Exception as e:
-#         print(f"Error when trying to return a game: {e}")
-#         return None
+        rental_to_return.returnDate = datetime.utcnow()
+        listing = Listing.query.get(rental_to_return.listingID)
+        if listing:
+            listing.set_Availability(True)  # Mark the listing as available again
+        db.session.commit()
+        print(f'Game with Rental ID {rental_id} returned successfully.')
+    except Exception as e:
+        print(f"Error when trying to return a game: {e}")
+        return None
 
 @app.cli.command("list-games", help="Lists all games in the database")
 def list_games():
